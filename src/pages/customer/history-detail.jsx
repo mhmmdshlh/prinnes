@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { useOrderDetail } from '../../hooks/use-orders'
-import { formatCurrency, formatDate, formatFileSize } from '../../lib/utils/format'
+import { formatCurrency, formatDate } from '../../lib/utils/format'
 import {
   ORDER_STATUS_LABEL,
   PAYMENT_STATUS_LABEL,
@@ -9,6 +9,8 @@ import {
   PRINT_TYPE_LABEL,
   PAPER_SIZE_LABEL,
 } from '../../lib/constants'
+import Badge from '../../components/ui/Badge'
+import FileList from '../../components/features/FileList'
 
 export default function HistoryDetail() {
   const { id } = useParams()
@@ -51,28 +53,22 @@ export default function HistoryDetail() {
               {order.queue_number}
             </p>
           </div>
-          <span className="bg-green-100 text-green-800 inline-flex items-center rounded-full px-3 py-1 text-sm font-medium">
+          <Badge variant="success">
             {ORDER_STATUS_LABEL[order.status]}
-          </span>
+          </Badge>
         </div>
       </div>
 
       <div className="rounded-xl border bg-white p-6 shadow-sm">
-        <h2 className="font-heading mb-4 text-lg font-semibold">
-          Detail Pesanan
-        </h2>
+        <h2 className="font-heading mb-4 text-lg font-semibold">Detail Pesanan</h2>
         <dl className="space-y-3 text-sm">
           <div className="flex justify-between">
             <dt className="text-muted">Jenis Cetak</dt>
-            <dd className="font-medium">
-              {PRINT_TYPE_LABEL[order.print_type]}
-            </dd>
+            <dd className="font-medium">{PRINT_TYPE_LABEL[order.print_type]}</dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-muted">Ukuran Kertas</dt>
-            <dd className="font-medium">
-              {PAPER_SIZE_LABEL[order.paper_size]}
-            </dd>
+            <dd className="font-medium">{PAPER_SIZE_LABEL[order.paper_size]}</dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-muted">Jumlah Copy</dt>
@@ -88,15 +84,11 @@ export default function HistoryDetail() {
             <dt className="text-muted">Pembayaran</dt>
             <dd className="font-medium">
               {PAYMENT_METHOD_LABEL[order.payment_method]} &middot;{' '}
-              <span
-                className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                  order.payment_status === 'lunas'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-gray-100 text-gray-800'
-                }`}
+              <Badge
+                variant={order.payment_status === 'lunas' ? 'success' : 'default'}
               >
                 {PAYMENT_STATUS_LABEL[order.payment_status]}
-              </span>
+              </Badge>
             </dd>
           </div>
           <div className="flex justify-between">
@@ -106,26 +98,7 @@ export default function HistoryDetail() {
         </dl>
       </div>
 
-      {order.order_files?.length > 0 && (
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <h2 className="font-heading mb-4 text-lg font-semibold">
-            File Dokumen
-          </h2>
-          <div className="space-y-2">
-            {order.order_files.map((file) => (
-              <div
-                key={file.id}
-                className="border-outline flex items-center justify-between rounded-lg border p-3"
-              >
-                <p className="text-sm font-medium">{file.file_name}</p>
-                <p className="text-muted text-xs">
-                  {formatFileSize(file.file_size)}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <FileList files={order.order_files} />
     </div>
   )
 }

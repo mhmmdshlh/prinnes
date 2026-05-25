@@ -1,8 +1,10 @@
 import { useActiveQueue } from '../../hooks/use-queue'
 import * as queries from '../../lib/supabase/queries'
+import QueueItem from '../../components/features/QueueItem'
+import EmptyState from '../../components/ui/EmptyState'
 
 export default function AdminQueue() {
-  const { queue, stats, loading, refetch } = useActiveQueue()
+  const { queue, loading, refetch } = useActiveQueue()
 
   async function handleProcess(orderId) {
     await queries.markAsProcessing(orderId)
@@ -51,23 +53,11 @@ export default function AdminQueue() {
           </h2>
           <div className="space-y-2">
             {processing.map((item) => (
-              <div
+              <QueueItem
                 key={item.id}
-                className="border-primary flex items-center justify-between rounded-xl border-2 bg-blue-50 p-4"
-              >
-                <div className="flex items-center gap-4">
-                  <span className="font-heading text-primary text-2xl font-bold">
-                    {item.queue_number}
-                  </span>
-                  <p className="text-sm font-medium">{item.users?.name}</p>
-                </div>
-                <button
-                  onClick={() => handleComplete(item.id)}
-                  className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700"
-                >
-                  Selesai
-                </button>
-              </div>
+                item={item}
+                onComplete={handleComplete}
+              />
             ))}
           </div>
         </section>
@@ -78,29 +68,11 @@ export default function AdminQueue() {
           Menunggu Antrian
         </h2>
         {waiting.length === 0 ? (
-          <div className="rounded-xl border bg-white p-8 text-center text-sm text-muted">
-            Tidak ada antrian yang menunggu
-          </div>
+          <EmptyState title="Tidak ada antrian yang menunggu" />
         ) : (
           <div className="space-y-2">
             {waiting.map((item) => (
-              <div
-                key={item.id}
-                className="border-outline flex items-center justify-between rounded-xl border bg-white p-4 transition-colors hover:border-primary/50"
-              >
-                <div className="flex items-center gap-4">
-                  <span className="font-heading text-muted text-lg font-bold">
-                    {item.queue_number}
-                  </span>
-                  <p className="text-sm font-medium">{item.users?.name}</p>
-                </div>
-                <button
-                  onClick={() => handleProcess(item.id)}
-                  className="bg-primary hover:bg-primary-dark rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors"
-                >
-                  Proses
-                </button>
-              </div>
+              <QueueItem key={item.id} item={item} onProcess={handleProcess} />
             ))}
           </div>
         )}

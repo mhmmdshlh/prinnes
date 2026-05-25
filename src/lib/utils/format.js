@@ -8,16 +8,22 @@ export function formatCurrency(amount) {
 }
 
 export function formatDate(dateString) {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return '-'
   return new Intl.DateTimeFormat('id-ID', {
     dateStyle: 'medium',
     timeStyle: 'short',
-  }).format(new Date(dateString))
+  }).format(date)
 }
 
 export function formatDateShort(dateString) {
+  if (!dateString) return '-'
+  const date = new Date(dateString)
+  if (isNaN(date.getTime())) return '-'
   return new Intl.DateTimeFormat('id-ID', {
     dateStyle: 'medium',
-  }).format(new Date(dateString))
+  }).format(date)
 }
 
 export function formatFileSize(bytes) {

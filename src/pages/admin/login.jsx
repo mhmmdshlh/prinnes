@@ -1,10 +1,11 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Printer, Shield } from 'lucide-react'
 import { adminLoginSchema } from '../../lib/utils/validation'
 import { useAuthActions } from '../../hooks/use-auth'
+import { useState } from 'react'
+import FormInput from '../../components/ui/FormInput'
 
 export default function AdminLogin() {
   const { loginAsAdmin } = useAuthActions()
@@ -55,35 +56,21 @@ export default function AdminLogin() {
               </div>
             )}
 
-            <div>
-              <label className="text-sm font-medium">Email</label>
-              <input
-                type="email"
-                {...register('email')}
-                className="border-outline mt-1 block w-full rounded-lg border px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                placeholder="admin@toko.com"
-              />
-              {errors.email && (
-                <p className="mt-1 text-xs text-red-500">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
+            <FormInput
+              label="Email"
+              type="email"
+              placeholder="admin@toko.com"
+              error={errors.email}
+              registration={register('email')}
+            />
 
-            <div>
-              <label className="text-sm font-medium">Password</label>
-              <input
-                type="password"
-                {...register('password')}
-                className="border-outline mt-1 block w-full rounded-lg border px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                placeholder="********"
-              />
-              {errors.password && (
-                <p className="mt-1 text-xs text-red-500">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
+            <FormInput
+              label="Password"
+              type="password"
+              placeholder="********"
+              error={errors.password}
+              registration={register('password')}
+            />
 
             <button
               type="submit"

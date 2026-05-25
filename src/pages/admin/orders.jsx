@@ -1,5 +1,5 @@
-import { useState, useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAllOrders } from '../../hooks/use-orders'
 import { formatCurrency, formatDate } from '../../lib/utils/format'
 import {
@@ -8,12 +8,37 @@ import {
   PRINT_TYPE_LABEL,
   PAPER_SIZE_LABEL,
 } from '../../lib/constants'
+import Badge from '../../components/ui/Badge'
+
+const STATUS_OPTIONS = [
+  { value: '', label: 'Semua Status' },
+  { value: 'menunggu', label: 'Menunggu' },
+  { value: 'diproses', label: 'Diproses' },
+  { value: 'selesai', label: 'Selesai' },
+  { value: 'siap_diambil', label: 'Siap Diambil' },
+]
+
+function statusBadgeVariant(status) {
+  if (status === 'menunggu') return 'warning'
+  if (status === 'diproses') return 'info'
+  if (status === 'selesai') return 'primary'
+  if (status === 'siap_diambil') return 'success'
+  return 'default'
+}
+
+function paymentBadgeVariant(paymentStatus) {
+  if (paymentStatus === 'lunas') return 'success'
+  if (paymentStatus === 'menunggu_verifikasi') return 'warning'
+  if (paymentStatus === 'ditolak') return 'error'
+  return 'default'
+}
 
 export default function AdminOrders() {
   const [statusFilter, setStatusFilter] = useState('')
-  const { orders, loading, refetch } = useAllOrders(
+  const { orders, loading } = useAllOrders(
     statusFilter ? { status: statusFilter } : {}
   )
+  const navigate = useNavigate()
 
   return (
     <div className="space-y-6">
@@ -24,11 +49,9 @@ export default function AdminOrders() {
           onChange={(e) => setStatusFilter(e.target.value)}
           className="border-outline rounded-lg border px-3 py-2 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
         >
-          <option value="">Semua Status</option>
-          <option value="menunggu">Menunggu</option>
-          <option value="diproses">Diproses</option>
-          <option value="selesai">Selesai</option>
-          <option value="siap_diambil">Siap Diambil</option>
+          {STATUS_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
         </select>
       </div>
 
@@ -54,55 +77,30 @@ export default function AdminOrders() {
               {orders.map((order) => (
                 <tr
                   key={order.id}
+                  onClick={() => navigate(`/admin/pesanan/${order.id}`)}
                   className="hover:bg-surface/50 cursor-pointer"
-                  onClick={() =>
-                    (window.location.href = `/admin/pesanan/${order.id}`)
-                  }
                 >
-                  <td className="px-4 py-3 font-medium">
-                    {order.queue_number}
-                  </td>
+                  <td className="px-4 py-3 font-medium">{order.queue_number}</td>
                   <td className="px-4 py-3">
                     <p className="font-medium">{order.users?.name}</p>
                     <p className="text-muted text-xs">{order.users?.phone}</p>
                   </td>
                   <td className="text-muted px-4 py-3">
                     {PRINT_TYPE_LABEL[order.print_type]} &middot;{' '}
-                    {PAPER_SIZE_LABEL[order.paper_size]} &middot;{' '}
-                    {order.copies}x
+                    {PAPER_SIZE_LABEL[order.paper_size]} &middot; {order.copies}x
                   </td>
                   <td className="px-4 py-3 font-medium">
                     {formatCurrency(order.total_price)}
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        order.payment_status === 'lunas'
-                          ? 'bg-green-100 text-green-800'
-                          : order.payment_status === 'menunggu_verifikasi'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : order.payment_status === 'ditolak'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
+                    <Badge variant={paymentBadgeVariant(order.payment_status)}>
                       {PAYMENT_STATUS_LABEL[order.payment_status]}
-                    </span>
+                    </Badge>
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        order.status === 'menunggu'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : order.status === 'diproses'
-                            ? 'bg-blue-100 text-blue-800'
-                            : order.status === 'selesai'
-                              ? 'bg-purple-100 text-purple-800'
-                              : 'bg-green-100 text-green-800'
-                      }`}
-                    >
+                    <Badge variant={statusBadgeVariant(order.status)}>
                       {ORDER_STATUS_LABEL[order.status]}
-                    </span>
+                    </Badge>
                   </td>
                   <td className="text-muted px-4 py-3 text-xs">
                     {formatDate(order.created_at)}

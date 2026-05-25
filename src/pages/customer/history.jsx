@@ -1,10 +1,14 @@
+import { useNavigate } from 'react-router-dom'
 import { History as HistoryIcon } from 'lucide-react'
 import { useOrders } from '../../hooks/use-orders'
 import { formatCurrency, formatDateShort } from '../../lib/utils/format'
 import { ORDER_STATUS_LABEL, PRINT_TYPE_LABEL, PAPER_SIZE_LABEL } from '../../lib/constants'
+import Badge from '../../components/ui/Badge'
+import EmptyState from '../../components/ui/EmptyState'
 
 export default function History() {
   const { orders, loading } = useOrders()
+  const navigate = useNavigate()
 
   const completedOrders = orders.filter((o) =>
     ['selesai', 'siap_diambil'].includes(o.status)
@@ -23,10 +27,7 @@ export default function History() {
       <h1 className="font-heading text-2xl font-bold">Riwayat Pesanan</h1>
 
       {completedOrders.length === 0 ? (
-        <div className="flex flex-col items-center py-16 text-center">
-          <HistoryIcon className="text-muted h-16 w-16" />
-          <p className="text-muted mt-4">Belum ada riwayat pesanan</p>
-        </div>
+        <EmptyState icon={HistoryIcon} title="Belum ada riwayat pesanan" />
       ) : (
         <div className="overflow-hidden rounded-xl border">
           <table className="w-full text-left text-sm">
@@ -43,12 +44,10 @@ export default function History() {
               {completedOrders.map((order) => (
                 <tr
                   key={order.id}
+                  onClick={() => navigate(`/riwayat/${order.id}`)}
                   className="hover:bg-surface/50 cursor-pointer"
-                  onClick={() => window.location.href = `/riwayat/${order.id}`}
                 >
-                  <td className="px-4 py-3 font-medium">
-                    {order.queue_number}
-                  </td>
+                  <td className="px-4 py-3 font-medium">{order.queue_number}</td>
                   <td className="text-muted px-4 py-3">
                     {PRINT_TYPE_LABEL[order.print_type]} &middot;{' '}
                     {PAPER_SIZE_LABEL[order.paper_size]}
@@ -60,15 +59,11 @@ export default function History() {
                     {formatDateShort(order.created_at)}
                   </td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        order.status === 'selesai'
-                          ? 'bg-purple-100 text-purple-800'
-                          : 'bg-green-100 text-green-800'
-                      }`}
+                    <Badge
+                      variant={order.status === 'selesai' ? 'primary' : 'success'}
                     >
                       {ORDER_STATUS_LABEL[order.status]}
-                    </span>
+                    </Badge>
                   </td>
                 </tr>
               ))}

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { useOrderDetail } from '../../hooks/use-orders'
-import { formatCurrency, formatDate, formatFileSize } from '../../lib/utils/format'
+import { formatCurrency, formatDate } from '../../lib/utils/format'
 import {
   ORDER_STATUS_LABEL,
   PAYMENT_STATUS_LABEL,
@@ -11,11 +11,21 @@ import {
   PAPER_SIZE_LABEL,
 } from '../../lib/constants'
 import * as queries from '../../lib/supabase/queries'
+import Badge from '../../components/ui/Badge'
+import FileList from '../../components/features/FileList'
 
 const statusTransitions = {
   menunggu: 'diproses',
   diproses: 'selesai',
   selesai: 'siap_diambil',
+}
+
+function statusBadgeVariant(status) {
+  if (status === 'menunggu') return 'warning'
+  if (status === 'diproses') return 'info'
+  if (status === 'selesai') return 'primary'
+  if (status === 'siap_diambil') return 'success'
+  return 'default'
 }
 
 export default function AdminOrderDetail() {
@@ -76,19 +86,9 @@ export default function AdminOrderDetail() {
           </p>
         </div>
         <div className="text-right">
-          <span
-            className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
-              order.status === 'menunggu'
-                ? 'bg-yellow-100 text-yellow-800'
-                : order.status === 'diproses'
-                  ? 'bg-blue-100 text-blue-800'
-                  : order.status === 'selesai'
-                    ? 'bg-purple-100 text-purple-800'
-                    : 'bg-green-100 text-green-800'
-            }`}
-          >
+          <Badge variant={statusBadgeVariant(order.status)}>
             {ORDER_STATUS_LABEL[order.status]}
-          </span>
+          </Badge>
 
           {nextStatus && (
             <button
@@ -106,21 +106,15 @@ export default function AdminOrderDetail() {
 
       <div className="grid gap-6 md:grid-cols-2">
         <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <h2 className="font-heading mb-4 text-lg font-semibold">
-            Detail Pesanan
-          </h2>
+          <h2 className="font-heading mb-4 text-lg font-semibold">Detail Pesanan</h2>
           <dl className="space-y-3 text-sm">
             <div className="flex justify-between">
               <dt className="text-muted">Jenis Cetak</dt>
-              <dd className="font-medium">
-                {PRINT_TYPE_LABEL[order.print_type]}
-              </dd>
+              <dd className="font-medium">{PRINT_TYPE_LABEL[order.print_type]}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-muted">Ukuran Kertas</dt>
-              <dd className="font-medium">
-                {PAPER_SIZE_LABEL[order.paper_size]}
-              </dd>
+              <dd className="font-medium">{PAPER_SIZE_LABEL[order.paper_size]}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-muted">Jumlah Copy</dt>
@@ -135,9 +129,7 @@ export default function AdminOrderDetail() {
             {order.notes && (
               <div className="flex justify-between">
                 <dt className="text-muted">Catatan</dt>
-                <dd className="max-w-xs text-right font-medium">
-                  {order.notes}
-                </dd>
+                <dd className="max-w-xs text-right font-medium">{order.notes}</dd>
               </div>
             )}
             <div className="flex justify-between">
@@ -148,30 +140,26 @@ export default function AdminOrderDetail() {
         </div>
 
         <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <h2 className="font-heading mb-4 text-lg font-semibold">
-            Pembayaran
-          </h2>
+          <h2 className="font-heading mb-4 text-lg font-semibold">Pembayaran</h2>
           <dl className="space-y-3 text-sm">
             <div className="flex justify-between">
               <dt className="text-muted">Metode</dt>
-              <dd className="font-medium">
-                {PAYMENT_METHOD_LABEL[order.payment_method]}
-              </dd>
+              <dd className="font-medium">{PAYMENT_METHOD_LABEL[order.payment_method]}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-muted">Status</dt>
               <dd>
-                <span
-                  className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                <Badge
+                  variant={
                     order.payment_status === 'lunas'
-                      ? 'bg-green-100 text-green-800'
+                      ? 'success'
                       : order.payment_status === 'menunggu_verifikasi'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-gray-100 text-gray-800'
-                  }`}
+                        ? 'warning'
+                        : 'default'
+                  }
                 >
                   {PAYMENT_STATUS_LABEL[order.payment_status]}
-                </span>
+                </Badge>
               </dd>
             </div>
           </dl>
@@ -200,26 +188,7 @@ export default function AdminOrderDetail() {
         </div>
       </div>
 
-      {order.order_files?.length > 0 && (
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
-          <h2 className="font-heading mb-4 text-lg font-semibold">
-            File Dokumen
-          </h2>
-          <div className="space-y-2">
-            {order.order_files.map((file) => (
-              <div
-                key={file.id}
-                className="border-outline flex items-center justify-between rounded-lg border p-3"
-              >
-                <p className="text-sm font-medium">{file.file_name}</p>
-                <p className="text-muted text-xs">
-                  {formatFileSize(file.file_size)}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <FileList files={order.order_files} />
     </div>
   )
 }
