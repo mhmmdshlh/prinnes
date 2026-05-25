@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #1A56A4;
+  --color-primary-dark: #134282;
+  --color-surface: #F7F7F7;
+  --color-error: #FF4D4D;
+  --color-outline: #E0E0E0;
+  --color-muted: #B0B0B0;
+
+  --font-family-body: "Inter", sans-serif;
+  --font-family-heading: "Poppins", sans-serif;
+  --font-family-mono: "Roboto Mono", monospace;
+}
