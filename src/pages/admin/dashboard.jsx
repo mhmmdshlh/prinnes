@@ -18,7 +18,7 @@ export default function AdminDashboard() {
     { label: 'Pesanan Hari Ini', value: stats?.total ?? 0, color: 'bg-blue-50 text-blue-700' },
     { label: 'Menunggu', value: stats?.menunggu ?? 0, color: 'bg-yellow-50 text-yellow-700' },
     { label: 'Diproses', value: stats?.diproses ?? 0, color: 'bg-purple-50 text-purple-700' },
-    { label: 'Siap Diambil', value: stats?.siap_diambil ?? 0, color: 'bg-green-50 text-green-700' },
+    { label: 'Selesai', value: stats?.selesai ?? 0, color: 'bg-green-50 text-green-700' },
     { label: 'Pendapatan Hari Ini', value: formatCurrency(stats?.revenue ?? 0), color: 'bg-emerald-50 text-emerald-700' },
   ]
 
