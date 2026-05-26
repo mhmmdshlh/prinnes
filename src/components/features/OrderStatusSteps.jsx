@@ -1,8 +1,8 @@
 export default function OrderStatusSteps({ status, className = '' }) {
-  const statusSteps = ['menunggu', 'diproses', 'selesai', 'siap_diambil']
-  const statusStepLabels = ['Menunggu', 'Diproses', 'Selesai', 'Siap Diambil']
+  const statusSteps = ['menunggu', 'diproses', 'selesai']
+  const statusStepLabels = ['Menunggu', 'Diproses', 'Selesai']
 
-  const currentStep = statusSteps.indexOf(status)
+  const currentStep = Math.max(0, statusSteps.indexOf(status))
 
   return (
     <div className={`space-y-2 ${className}`}>
