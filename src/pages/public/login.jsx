@@ -30,7 +30,8 @@ export default function Login() {
     <div className="flex min-h-screen">
       <div className="hidden w-1/2 flex-col justify-center bg-primary/10 p-16 lg:flex">
         <div className="mx-auto max-w-md">
-          <div className="mb-12">
+          <div className="mb-12 flex items-center gap-2">
+            <img src="/logo.svg" alt="PrinNes" className="h-9 w-auto" />
             <h1 className="font-heading text-3xl font-bold text-primary">
               PrinNes
             </h1>
@@ -39,14 +40,14 @@ export default function Login() {
           <div className="relative">
             <div className="mb-8">
               <h2 className="font-heading text-4xl font-bold leading-tight text-primary">
-                Solusi Cerdas
+                Print dan Fotokopi
                 <br />
-                untuk Bisnismu
+                Dalam Sentuhan Jari
               </h2>
               <p className="mt-4 text-base leading-relaxed text-gray-500">
-                Kelola pesanan, lacak progress, dan tingkatkan
-                produktivitas usaha percetakan Anda dalam satu
-                platform terintegrasi.
+                Nikmati kemudahan cetak dokumen dan foto langsung dari
+                perangkat Anda. Cepat, praktis, dan berkualitas tinggi
+                hanya dengan beberapa klik.
               </p>
             </div>
 

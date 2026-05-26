@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Printer, Shield } from 'lucide-react'
+import { Shield } from 'lucide-react'
 import { adminLoginSchema } from '../../lib/utils/validation'
 import { useAuthActions } from '../../hooks/use-auth'
 import { useState } from 'react'
@@ -33,7 +33,7 @@ export default function AdminLogin() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2">
-            <Printer className="h-8 w-8 text-primary" />
+            <img src="/logo.svg" alt="PrinNes" className="h-8 w-auto" />
             <span className="font-heading text-2xl font-bold text-primary">
               PrinNes
             </span>

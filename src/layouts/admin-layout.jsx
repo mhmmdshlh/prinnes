@@ -6,7 +6,6 @@ import {
   CreditCard,
   DollarSign,
   LogOut,
-  Printer,
 } from 'lucide-react'
 import { useAuthActions } from '../hooks/use-auth'
 import { cn } from '../lib/utils/cn'
@@ -27,7 +26,7 @@ export default function AdminLayout() {
     <div className="flex min-h-screen">
       <aside className="border-outline hidden w-64 flex-shrink-0 border-r bg-white md:flex md:flex-col">
         <div className="border-outline flex h-16 items-center gap-2 border-b px-6">
-          <Printer className="h-6 w-6 text-primary" />
+          <img src="/logo.svg" alt="PrinNes" className="h-6 w-auto" />
           <span className="font-heading text-lg font-bold text-primary">
             PrinNes Admin
           </span>
@@ -67,7 +66,7 @@ export default function AdminLayout() {
       <div className="flex flex-1 flex-col">
         <header className="border-outline flex h-16 items-center justify-between border-b bg-white px-6 md:hidden">
           <Link to="/admin/dashboard" className="flex items-center gap-2">
-            <Printer className="h-5 w-5 text-primary" />
+            <img src="/logo.svg" alt="PrinNes" className="h-5 w-auto" />
             <span className="font-heading font-bold text-primary">
               PrinNes Admin
             </span>
