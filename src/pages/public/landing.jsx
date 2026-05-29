@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Printer, Upload, QrCode, Clock } from 'lucide-react'
+import { ParallaxProvider, Parallax } from 'react-scroll-parallax'
 
 const steps = [
   {
@@ -33,36 +34,113 @@ const services = [
   { name: 'Cetak Berwarna A3', price: 'Rp 1.000/lembar' },
 ]
 
+const opacityLevels = [40, 35, 30]
+
+const Elements = [
+  { src: '/svg/printer.svg', alt: 'Printer' },
+  { src: '/svg/laptop.svg', alt: 'Laptop' },
+  { src: '/svg/paper.svg', alt: 'Paper' },
+  { src: '/svg/qrcode.svg', alt: 'QR Code' },
+  { src: '/svg/clock.svg', alt: 'Clock' },
+  { src: '/svg/gear.svg', alt: 'Gear' },
+  { src: '/svg/checklist.svg', alt: 'Checklist' },
+  { src: '/svg/wallet.svg', alt: 'Wallet' },
+]
+
 export default function Landing() {
   return (
     <>
-      <section className="from-primary/5 bg-linear-to-b to-white py-20">
-        <div className="mx-auto max-w-4xl px-4 text-center">
-          <h1 className="font-heading text-4xl font-bold text-primary md:text-5xl">
-            Printing Tanpa Antre
-          </h1>
-          <p className="text-muted mt-4 text-lg">
-            Pesan cetak dan fotokopi online. Upload file, atur spesifikasi, dan
-            ambil pesanan saat sudah siap.
-          </p>
-          <div className="mt-8 flex items-center justify-center gap-4">
-            <Link
-              to="/register"
-              className="bg-primary hover:bg-primary-dark rounded-lg px-8 py-3 font-medium text-white transition-colors"
-            >
-              Mulai Sekarang
-            </Link>
-            <Link
-              to="/login"
-              className="border-outline text-primary hover:bg-surface rounded-lg border px-8 py-3 font-medium transition-colors"
-            >
-              Masuk
-            </Link>
-          </div>
-        </div>
-      </section>
+      <ParallaxProvider>
+        <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-linear-to-b from-primary/5 to-white">
+          {/* Parallax SVG Elements */}
+          <div className="pointer-events-none absolute inset-0">
+            {/* Printer - kiri bawah */}
+            <Parallax speed={-3} className="absolute bottom-[10%] left-[8%] hidden md:block">
+              <img src={Elements[0].src} alt={Elements[0].alt} className={`w-28 opacity-${opacityLevels[0]} md:w-36`} />
+            </Parallax>
 
-      <section className="py-16">
+            {/* Laptop - kanan atas */}
+            <Parallax speed={-6} className="absolute right-[5%] top-[12%] hidden md:block">
+              <img src={Elements[1].src} alt={Elements[1].alt} className={`w-28 opacity-${opacityLevels[1]} md:w-32`} />
+            </Parallax>
+
+            {/* Paper - kiri atas */}
+            <Parallax speed={-10} className="absolute left-[12%] top-[20%] hidden sm:block">
+              <img src={Elements[2].src} alt={Elements[2].alt} className={`w-20 opacity-${opacityLevels[2]} md:w-24`} />
+            </Parallax>
+
+            {/* QR Code - kanan bawah */}
+            <Parallax speed={-4} className="absolute bottom-[20%] right-[10%] hidden md:block">
+              <img src={Elements[3].src} alt={Elements[3].alt} className={`w-20 opacity-${opacityLevels[2]} md:w-24`} />
+            </Parallax>
+
+            {/* Clock - tengah kanan */}
+            <Parallax speed={-8} className="absolute right-[25%] top-[35%] hidden sm:block">
+              <img src={Elements[4].src} alt={Elements[4].alt} className={`w-16 opacity-${opacityLevels[0]} md:w-20`} />
+            </Parallax>
+
+            {/* Gear - tengah kiri */}
+            <Parallax speed={-7} className="absolute left-[20%] top-[55%] hidden md:block">
+              <img src={Elements[5].src} alt={Elements[5].alt} className={`w-16 opacity-${opacityLevels[1]} md:w-20`} />
+            </Parallax>
+
+            {/* Checklist - atas tengah */}
+            <Parallax speed={-5} className="absolute left-[45%] top-[10%] hidden sm:block">
+              <img src={Elements[6].src} alt={Elements[6].alt} className={`w-14 opacity-${opacityLevels[2]} md:w-18`} />
+            </Parallax>
+
+            {/* Wallet - bawah tengah */}
+            <Parallax speed={-9} className="absolute bottom-[12%] right-[30%] hidden md:block">
+              <img src={Elements[7].src} alt={Elements[7].alt} className={`w-16 opacity-${opacityLevels[0]} md:w-20`} />
+            </Parallax>
+
+            {/* Small paper - pojok kanan (mobile visible) */}
+            <Parallax speed={-5} className="absolute right-[5%] top-[8%] sm:hidden">
+              <img src={Elements[2].src} alt={Elements[2].alt} className={`w-16 opacity-${opacityLevels[2]}`} />
+            </Parallax>
+
+            {/* Small printer - kiri tengah (mobile visible) */}
+            <Parallax speed={-4} className="absolute bottom-[15%] left-[5%] sm:hidden">
+              <img src={Elements[0].src} alt={Elements[0].alt} className={`w-16 opacity-${opacityLevels[0]}`} />
+            </Parallax>
+
+            {/* Small gear - kanan tengah (mobile visible) */}
+            <Parallax speed={-6} className="absolute bottom-[30%] right-[8%] sm:hidden">
+              <img src={Elements[5].src} alt={Elements[5].alt} className={`w-14 opacity-${opacityLevels[1]}`} />
+            </Parallax>
+          </div>
+
+          {/* Overlay gradient agar teks tetap terbaca */}
+          <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-white/60 via-transparent to-white/30" />
+
+          {/* Konten utama */}
+          <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
+            <h1 className="font-heading text-4xl font-bold text-primary md:text-5xl">
+              Printing Tanpa Antre
+            </h1>
+            <p className="text-muted mt-4 text-lg">
+              Pesan cetak dan fotokopi online. Upload file, atur spesifikasi, dan
+              ambil pesanan saat sudah siap.
+            </p>
+            <div className="mt-8 flex items-center justify-center gap-4">
+              <Link
+                to="/register"
+                className="bg-primary hover:bg-primary-dark rounded-lg px-8 py-3 font-medium text-white transition-colors"
+              >
+                Mulai Sekarang
+              </Link>
+              <Link
+                to="/login"
+                className="border-outline text-primary hover:bg-surface rounded-lg border px-8 py-3 font-medium transition-colors"
+              >
+                Masuk
+              </Link>
+            </div>
+          </div>
+        </section>
+      </ParallaxProvider>
+
+      <section className="bg-surface py-16">
         <div className="mx-auto max-w-6xl px-4">
           <h2 className="font-heading text-center text-2xl font-bold">
             Cara Kerja
@@ -113,7 +191,7 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="py-16">
+      <section className="bg-surface py-16">
         <div className="mx-auto max-w-4xl px-4 text-center">
           <h2 className="font-heading text-2xl font-bold">
             Informasi Toko
