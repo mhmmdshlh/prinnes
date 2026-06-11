@@ -10,10 +10,15 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       setUser(user ?? null)
       if (user) {
-        getProfile(user.id).then(setProfile).catch(console.error)
+        try {
+          const p = await getProfile(user.id)
+          setProfile(p)
+        } catch (e) {
+          console.error(e)
+        }
       }
       setLoading(false)
     })

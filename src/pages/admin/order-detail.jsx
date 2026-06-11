@@ -17,14 +17,13 @@ import FileList from '../../components/features/FileList'
 const statusTransitions = {
   menunggu: 'diproses',
   diproses: 'selesai',
-  selesai: 'siap_diambil',
+  selesai: null,
 }
 
 function statusBadgeVariant(status) {
   if (status === 'menunggu') return 'warning'
   if (status === 'diproses') return 'info'
-  if (status === 'selesai') return 'primary'
-  if (status === 'siap_diambil') return 'success'
+  if (status === 'selesai') return 'success'
   return 'default'
 }
 
@@ -68,7 +67,7 @@ export default function AdminOrderDetail() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <button
-        onClick={() => navigate('/admin/pesanan')}
+        onClick={() => navigate(-1)}
         className="text-muted hover:text-primary inline-flex items-center gap-2 text-sm transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -117,6 +116,10 @@ export default function AdminOrderDetail() {
               <dd className="font-medium">{PAPER_SIZE_LABEL[order.paper_size]}</dd>
             </div>
             <div className="flex justify-between">
+              <dt className="text-muted">Jumlah Halaman</dt>
+              <dd className="font-medium">{order.pages}</dd>
+            </div>
+            <div className="flex justify-between">
               <dt className="text-muted">Jumlah Copy</dt>
               <dd className="font-medium">{order.copies}x</dd>
             </div>
@@ -149,17 +152,21 @@ export default function AdminOrderDetail() {
             <div className="flex justify-between">
               <dt className="text-muted">Status</dt>
               <dd>
-                <Badge
-                  variant={
-                    order.payment_status === 'lunas'
-                      ? 'success'
-                      : order.payment_status === 'menunggu_verifikasi'
-                        ? 'warning'
-                        : 'default'
-                  }
-                >
-                  {PAYMENT_STATUS_LABEL[order.payment_status]}
-                </Badge>
+                {order.payment_method === 'qris' ? (
+                  <Badge
+                    variant={
+                      order.payment_status === 'lunas'
+                        ? 'success'
+                        : order.payment_status === 'menunggu_verifikasi'
+                          ? 'warning'
+                          : 'default'
+                    }
+                  >
+                    {PAYMENT_STATUS_LABEL[order.payment_status]}
+                  </Badge>
+                ) : (
+                  <span className="font-medium">&mdash;</span>
+                )}
               </dd>
             </div>
           </dl>

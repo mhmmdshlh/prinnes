@@ -1,15 +1,40 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { PlusCircle, ClipboardList } from 'lucide-react'
+import { PlusCircle, ClipboardList, Store } from 'lucide-react'
 import { useAuth } from '../../hooks/use-auth-context'
 import { useActiveOrders } from '../../hooks/use-orders'
+import { useStoreStatus } from '../../hooks/use-store-status'
+import { getLatestOrderNumberToday, getLastCompletedOrder } from '../../lib/supabase/queries'
 import EmptyState from '../../components/ui/EmptyState'
 import OrderItem from '../../components/features/OrderItem'
 
 export default function CustomerDashboard() {
   const { profile } = useAuth()
   const { orders, loading } = useActiveOrders()
+  const { isOpen, loading: storeLoading } = useStoreStatus()
+  const [availableQueue, setAvailableQueue] = useState(null)
+  const [lastCompleted, setLastCompleted] = useState(null)
+  const [infoLoading, setInfoLoading] = useState(true)
 
-  if (loading) {
+  useEffect(() => {
+    async function fetchQueueInfo() {
+      try {
+        const [avail, completed] = await Promise.all([
+          getLatestOrderNumberToday(),
+          getLastCompletedOrder(),
+        ])
+        setAvailableQueue(avail)
+        setLastCompleted(completed?.queue_number || null)
+      } catch (e) {
+        console.error('Gagal memuat info antrian:', e)
+      } finally {
+        setInfoLoading(false)
+      }
+    }
+    fetchQueueInfo()
+  }, [])
+
+  if (loading || storeLoading) {
     return (
       <div className="flex justify-center py-16">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -26,15 +51,53 @@ export default function CustomerDashboard() {
         <p className="text-muted mt-1">Selamat datang di PrinNes</p>
       </div>
 
-      <Link
-        to="/pesanan/buat"
-        className="bg-primary hover:bg-primary-dark flex items-center justify-center gap-3 rounded-xl px-6 py-5 text-white transition-colors"
-      >
-        <PlusCircle className="h-6 w-6" />
-        <span className="font-heading text-lg font-semibold">
-          Buat Pesanan Baru
-        </span>
-      </Link>
+      {isOpen ? (
+        <Link
+          to="/pesanan/buat"
+          className="bg-primary hover:bg-primary-dark flex items-center justify-center gap-3 rounded-xl px-6 py-5 text-white transition-colors"
+        >
+          <PlusCircle className="h-6 w-6" />
+          <span className="font-heading text-lg font-semibold">
+            Buat Pesanan Baru
+          </span>
+        </Link>
+      ) : (
+        <div className="flex items-center justify-center gap-3 rounded-xl bg-red-50 px-6 py-5 text-red-700">
+          <Store className="h-6 w-6" />
+          <div>
+            <p className="font-heading text-lg font-semibold">Toko Sedang Tutup</p>
+            <p className="text-sm text-red-600">Belum bisa membuat pesanan baru saat ini</p>
+          </div>
+        </div>
+      )}
+
+      {infoLoading ? (
+        <div className="grid grid-cols-2 gap-4">
+          <div className="rounded-xl border bg-white p-4 shadow-sm">
+            <div className="h-4 w-20 animate-pulse rounded bg-gray-200" />
+            <div className="mt-2 h-8 w-16 animate-pulse rounded bg-gray-200" />
+          </div>
+          <div className="rounded-xl border bg-white p-4 shadow-sm">
+            <div className="h-4 w-20 animate-pulse rounded bg-gray-200" />
+            <div className="mt-2 h-8 w-16 animate-pulse rounded bg-gray-200" />
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-4">
+          <div className="rounded-xl border bg-white p-4 shadow-sm">
+            <p className="text-muted text-xs">Antrian Tersedia</p>
+            <p className="font-heading text-primary mt-1 text-3xl font-bold">
+              {availableQueue}
+            </p>
+          </div>
+          <div className="rounded-xl border bg-white p-4 shadow-sm">
+            <p className="text-muted text-xs">Terakhir Selesai Hari Ini</p>
+            <p className="font-heading text-primary mt-1 text-3xl font-bold">
+              {lastCompleted || '\u2014'}
+            </p>
+          </div>
+        </div>
+      )}
 
       <section>
         <h2 className="font-heading mb-4 text-lg font-semibold">

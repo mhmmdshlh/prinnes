@@ -1,9 +1,11 @@
+import { useNavigate } from 'react-router-dom'
 import { useActiveQueue } from '../../hooks/use-queue'
 import * as queries from '../../lib/supabase/queries'
 import QueueItem from '../../components/features/QueueItem'
 import EmptyState from '../../components/ui/EmptyState'
 
 export default function AdminQueue() {
+  const navigate = useNavigate()
   const { queue, loading, refetch } = useActiveQueue()
 
   async function handleProcess(orderId) {
@@ -57,6 +59,7 @@ export default function AdminQueue() {
                 key={item.id}
                 item={item}
                 onComplete={handleComplete}
+                onDetail={() => navigate(`/admin/pesanan/${item.id}`)}
               />
             ))}
           </div>
@@ -72,7 +75,7 @@ export default function AdminQueue() {
         ) : (
           <div className="space-y-2">
             {waiting.map((item) => (
-              <QueueItem key={item.id} item={item} onProcess={handleProcess} />
+              <QueueItem key={item.id} item={item} onProcess={handleProcess} onDetail={() => navigate(`/admin/pesanan/${item.id}`)} />
             ))}
           </div>
         )}

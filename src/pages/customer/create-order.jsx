@@ -2,27 +2,33 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, Store } from 'lucide-react'
 import { orderConfigSchema, paymentMethodSchema, allowedFileTypes, MAX_FILE_SIZE } from '../../lib/utils/validation'
 import { useAuth } from '../../hooks/use-auth-context'
 import { useCalculatePrice } from '../../hooks/use-prices'
+import { useStoreStatus } from '../../hooks/use-store-status'
+import { extractTotalPages } from '../../lib/utils/pageCount'
 import * as queries from '../../lib/supabase/queries'
 import FileUpload from '../../components/ui/FileUpload'
 import OrderConfigForm from '../../components/features/OrderConfigForm'
 import OrderSummary from '../../components/features/OrderSummary'
 import OrderSuccess from '../../components/features/OrderSuccess'
+import QrPaymentStep from '../../components/features/QrPaymentStep'
 
 export default function CreateOrder() {
   const [searchParams, setSearchParams] = useSearchParams()
   const step = parseInt(searchParams.get('step') || '1', 10)
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { calculate } = useCalculatePrice()
+  const { calculate, loading } = useCalculatePrice()
+  const { isOpen, loading: storeLoading } = useStoreStatus()
 
   const [files, setFiles] = useState([])
   const [fileError, setFileError] = useState('')
   const [totalPrice, setTotalPrice] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
   const [orderResult, setOrderResult] = useState(null)
+  const [qrOrder, setQrOrder] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
@@ -67,8 +73,10 @@ export default function CreateOrder() {
     window.scrollTo(0, 0)
   }
 
-  function handleConfigNext(data) {
-    const price = calculate(data)
+  async function handleConfigNext(data) {
+    const pages = await extractTotalPages(files)
+    setTotalPages(pages)
+    const price = calculate({ ...data, pages })
     setTotalPrice(price)
     goToStep(3)
   }
@@ -91,6 +99,7 @@ export default function CreateOrder() {
         user_id: user.id,
         print_type: config.print_type,
         paper_size: config.paper_size,
+        pages: totalPages,
         copies: config.copies,
         notes: config.notes || null,
         total_price: totalPrice,
@@ -103,13 +112,22 @@ export default function CreateOrder() {
         await queries.uploadOrderFile(order.id, file)
       }
 
-      setOrderResult(order)
-      goToStep(4)
+      if (data.payment_method === 'qris') {
+        setQrOrder(order)
+        goToStep(4)
+      } else {
+        setOrderResult(order)
+        goToStep(4)
+      }
     } catch (e) {
       setError(e.message || 'Gagal membuat pesanan.')
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (qrOrder) {
+    return <QrPaymentStep order={qrOrder} />
   }
 
   if (orderResult) {
@@ -119,6 +137,32 @@ export default function CreateOrder() {
         onViewDetail={() => navigate(`/pesanan/${orderResult.id}`)}
         onGoDashboard={() => navigate('/dashboard')}
       />
+    )
+  }
+
+  if (storeLoading) {
+    return (
+      <div className="flex justify-center py-16">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    )
+  }
+
+  if (!isOpen) {
+    return (
+      <div className="mx-auto max-w-md py-16 text-center">
+        <Store className="mx-auto h-12 w-12 text-red-400" />
+        <h1 className="font-heading mt-4 text-xl font-bold">Toko Sedang Tutup</h1>
+        <p className="text-muted mt-2">
+          Maaf, belum bisa membuat pesanan baru saat ini. Silakan coba kembali nanti.
+        </p>
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="bg-primary hover:bg-primary-dark mt-6 rounded-lg px-6 py-2.5 text-sm font-medium text-white transition-colors"
+        >
+          Kembali ke Dashboard
+        </button>
+      </div>
     )
   }
 
@@ -190,9 +234,10 @@ export default function CreateOrder() {
             </button>
             <button
               type="submit"
-              className="bg-primary hover:bg-primary-dark flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-medium text-white transition-colors"
+              disabled={loading}
+              className="bg-primary hover:bg-primary-dark disabled:bg-muted flex items-center gap-2 rounded-lg px-6 py-2.5 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed"
             >
-              Selanjutnya
+              {loading ? 'Memuat harga...' : 'Selanjutnya'}
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
@@ -204,6 +249,7 @@ export default function CreateOrder() {
           <OrderSummary
             config={configForm.getValues()}
             filesCount={files.length}
+            totalPages={totalPages}
             totalPrice={totalPrice}
             paymentForm={paymentForm}
           />

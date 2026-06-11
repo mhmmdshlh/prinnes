@@ -71,26 +71,11 @@ export async function updateOrderStatus(orderId, status) {
 }
 
 export async function getNextQueueNumber() {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
-
-  const { data, error } = await supabase
-    .from('orders')
-    .select('queue_number')
-    .gte('created_at', today.toISOString())
-    .lt('created_at', tomorrow.toISOString())
-    .order('queue_number', { ascending: false })
-    .limit(1)
+  const { data, error } = await supabase.rpc('get_next_queue_number')
 
   if (error) throw error
 
-  if (!data || data.length === 0) return 'A001'
-
-  const lastNumber = data[0].queue_number
-  const num = parseInt(lastNumber.slice(1), 10) + 1
-  return `A${String(num).padStart(3, '0')}`
+  return data
 }
 
 export async function getTodayOrderStats() {
@@ -112,9 +97,8 @@ export async function getTodayOrderStats() {
     menunggu: data.filter((o) => o.status === 'menunggu').length,
     diproses: data.filter((o) => o.status === 'diproses').length,
     selesai: data.filter((o) => o.status === 'selesai').length,
-    siap_diambil: data.filter((o) => o.status === 'siap_diambil').length,
     revenue: data
-      .filter((o) => o.status === 'selesai' || o.status === 'siap_diambil')
+      .filter((o) => o.status === 'selesai')
       .reduce((sum, o) => sum + Number(o.total_price), 0),
   }
 }
@@ -264,7 +248,7 @@ export async function updateServicePrice(id, pricePerPage) {
 export async function getActiveQueue() {
   const { data, error } = await supabase
     .from('orders')
-    .select('id, queue_number, status, user_id, users(name)')
+    .select('id, queue_number, status, user_id, users(name), print_type, paper_size, copies, order_files(file_name)')
     .in('status', ['menunggu', 'diproses'])
     .order('created_at', { ascending: true })
   if (error) throw error
@@ -279,6 +263,124 @@ export async function markAsCompleted(orderId) {
   return updateOrderStatus(orderId, 'selesai')
 }
 
-export async function markAsReady(orderId) {
-  return updateOrderStatus(orderId, 'siap_diambil')
+export async function getLatestOrderNumberToday() {
+  const dateStr = new Date().toISOString().split('T')[0]
+
+  const { data, error } = await supabase
+    .from('queue_sequence')
+    .select('last_number')
+    .eq('date', dateStr)
+    .maybeSingle()
+
+  if (error) throw error
+
+  if (!data) return 'A001'
+
+  const num = Number(data.last_number) + 1
+  return `A${String(num).padStart(3, '0')}`
+}
+
+export async function getLastCompletedOrder() {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+
+  const { data, error } = await supabase
+    .from('orders')
+    .select('queue_number')
+    .eq('status', 'selesai')
+    .gte('created_at', today.toISOString())
+    .lt('created_at', tomorrow.toISOString())
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error) throw error
+
+  return data
+}
+
+export async function markPaymentAsPaid(orderId) {
+  const { error } = await supabase
+    .from('orders')
+    .update({ payment_status: 'lunas', updated_at: new Date().toISOString() })
+    .eq('id', orderId)
+  if (error) throw error
+}
+
+/* ───────── STORE SETTINGS ───────── */
+
+export async function getStoreStatus() {
+  const { data, error } = await supabase
+    .from('store_settings')
+    .select('is_open')
+    .single()
+  if (error) throw error
+  return data.is_open
+}
+
+export async function setStoreStatus(isOpen) {
+  const { error } = await supabase
+    .from('store_settings')
+    .update({ is_open: isOpen })
+    .eq('id', 1)
+  if (error) throw error
+}
+
+/* ───────── PAPER ESTIMATES ───────── */
+
+export async function getTodayPaperEstimates() {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+
+  const { data, error } = await supabase
+    .from('orders')
+    .select('print_type, paper_size, pages, copies')
+    .in('status', ['menunggu', 'diproses'])
+    .gte('created_at', today.toISOString())
+    .lt('created_at', tomorrow.toISOString())
+
+  if (error) throw error
+
+  const groups = {}
+  for (const o of data) {
+    const key = `${o.print_type}_${o.paper_size}`
+    if (!groups[key]) {
+      groups[key] = { print_type: o.print_type, paper_size: o.paper_size, total_sheets: 0 }
+    }
+    groups[key].total_sheets += Number(o.pages) * Number(o.copies)
+  }
+
+  return Object.values(groups).sort((a, b) => {
+    if (a.print_type !== b.print_type) return a.print_type.localeCompare(b.print_type)
+    return a.paper_size.localeCompare(b.paper_size)
+  })
+}
+
+/* ───────── HOURLY STATS ───────── */
+
+export async function getTodayHourlyOrders() {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const tomorrow = new Date(today)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+
+  const { data, error } = await supabase
+    .from('orders')
+    .select('created_at')
+    .gte('created_at', today.toISOString())
+    .lt('created_at', tomorrow.toISOString())
+
+  if (error) throw error
+
+  const hourly = Array.from({ length: 24 }, (_, i) => ({ hour: i, count: 0 }))
+  for (const o of data) {
+    const h = new Date(o.created_at).getHours()
+    hourly[h].count++
+  }
+
+  return hourly.filter((h) => h.count > 0)
 }

@@ -71,6 +71,10 @@ export default function HistoryDetail() {
             <dd className="font-medium">{PAPER_SIZE_LABEL[order.paper_size]}</dd>
           </div>
           <div className="flex justify-between">
+            <dt className="text-muted">Jumlah Halaman</dt>
+            <dd className="font-medium">{order.pages}</dd>
+          </div>
+          <div className="flex justify-between">
             <dt className="text-muted">Jumlah Copy</dt>
             <dd className="font-medium">{order.copies}x</dd>
           </div>
@@ -83,12 +87,17 @@ export default function HistoryDetail() {
           <div className="flex justify-between">
             <dt className="text-muted">Pembayaran</dt>
             <dd className="font-medium">
-              {PAYMENT_METHOD_LABEL[order.payment_method]} &middot;{' '}
-              <Badge
-                variant={order.payment_status === 'lunas' ? 'success' : 'default'}
-              >
-                {PAYMENT_STATUS_LABEL[order.payment_status]}
-              </Badge>
+              {PAYMENT_METHOD_LABEL[order.payment_method]}
+              {order.payment_method === 'qris' && (
+                <>
+                  {' '}&middot;{' '}
+                  <Badge
+                    variant={order.payment_status === 'lunas' ? 'success' : 'default'}
+                  >
+                    {PAYMENT_STATUS_LABEL[order.payment_status]}
+                  </Badge>
+                </>
+              )}
             </dd>
           </div>
           <div className="flex justify-between">

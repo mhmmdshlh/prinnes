@@ -11,7 +11,7 @@ export default function History() {
   const navigate = useNavigate()
 
   const completedOrders = orders.filter((o) =>
-    ['selesai', 'siap_diambil'].includes(o.status)
+    o.status === 'selesai'
   )
 
   if (loading) {

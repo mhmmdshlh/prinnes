@@ -86,6 +86,10 @@ export default function OrderDetail() {
               <dd className="font-medium">{PAPER_SIZE_LABEL[order.paper_size]}</dd>
             </div>
             <div className="flex justify-between">
+              <dt className="text-muted">Jumlah Halaman</dt>
+              <dd className="font-medium">{order.pages}</dd>
+            </div>
+            <div className="flex justify-between">
               <dt className="text-muted">Jumlah Copy</dt>
               <dd className="font-medium">{order.copies}x</dd>
             </div>

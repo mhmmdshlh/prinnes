@@ -1,7 +1,7 @@
 import { formatCurrency } from '../../lib/utils/format'
 import { PRINT_TYPE_LABEL, PAPER_SIZE_LABEL } from '../../lib/constants'
 
-export default function OrderSummary({ config, filesCount, totalPrice, paymentForm }) {
+export default function OrderSummary({ config, filesCount, totalPages, totalPrice, paymentForm }) {
   return (
     <>
       <div className="space-y-4 rounded-xl border bg-white p-6 shadow-sm">
@@ -19,6 +19,10 @@ export default function OrderSummary({ config, filesCount, totalPrice, paymentFo
           <div className="flex justify-between">
             <span className="text-muted">Ukuran Kertas</span>
             <span>{PAPER_SIZE_LABEL[config.paper_size]}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted">Jumlah Halaman</span>
+            <span>{totalPages}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-muted">Jumlah Copy</span>

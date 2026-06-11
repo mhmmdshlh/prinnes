@@ -2,14 +2,12 @@ export const ORDER_STATUS = {
   MENUNGGU: 'menunggu',
   DIPROSES: 'diproses',
   SELESAI: 'selesai',
-  SIAP_DIAMBIL: 'siap_diambil',
 }
 
 export const ORDER_STATUS_LABEL = {
   menunggu: 'Menunggu',
   diproses: 'Diproses',
   selesai: 'Selesai',
-  siap_diambil: 'Siap Diambil',
 }
 
 export const PAYMENT_STATUS = {

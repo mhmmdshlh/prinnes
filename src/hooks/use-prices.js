@@ -25,18 +25,18 @@ export function useServicePrices() {
 }
 
 export function useCalculatePrice() {
-  const { prices } = useServicePrices()
+  const { prices, loading } = useServicePrices()
 
   const calculate = useCallback(
-    ({ print_type, paper_size, copies }) => {
+    ({ print_type, paper_size, pages, copies }) => {
       const price = prices.find(
         (p) => p.print_type === print_type && p.paper_size === paper_size
       )
       if (!price) return 0
-      return Number(price.price_per_page) * copies
+      return Number(price.price_per_page) * pages * copies
     },
     [prices]
   )
 
-  return { prices, calculate }
+  return { prices, calculate, loading }
 }

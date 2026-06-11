@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react'
 
-export default function OrderSuccess({ order, onViewDetail, onGoDashboard }) {
+export default function OrderSuccess({ order, onViewDetail, onGoDashboard, note }) {
   return (
     <div className="mx-auto max-w-lg space-y-6 py-8">
       <div className="rounded-xl border bg-white p-8 text-center shadow-sm">
@@ -14,9 +14,13 @@ export default function OrderSuccess({ order, onViewDetail, onGoDashboard }) {
         <p className="font-heading text-primary mt-2 text-4xl font-bold">
           {order.queue_number}
         </p>
-        <p className="text-muted mt-4 text-sm">
-          Simpan nomor antrian ini untuk tracking pesanan Anda.
-        </p>
+        {note ? (
+          <p className="text-muted mt-4 text-sm">{note}</p>
+        ) : (
+          <p className="text-muted mt-4 text-sm">
+            Simpan nomor antrian ini untuk tracking pesanan Anda.
+          </p>
+        )}
         <div className="mt-6 space-y-3">
           <button
             onClick={onViewDetail}

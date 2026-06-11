@@ -19,8 +19,8 @@ export default function OrderItem({ order, showUser = false }) {
           <p className="text-muted mt-1 text-sm">
             {PRINT_TYPE_LABEL[order.print_type] || order.print_type} &middot;{' '}
             {PAPER_SIZE_LABEL[order.paper_size] || order.paper_size} &middot;{' '}
-            {order.copies} copy
-            {order.total_price && ` &middot; ${new Intl.NumberFormat('id-ID', {
+            {order.pages} hlm &middot; {order.copies} copy
+            {order.total_price && ` · ${new Intl.NumberFormat('id-ID', {
               style: 'currency',
               currency: 'IDR',
             }).format(order.total_price)}`}
