@@ -5,6 +5,7 @@ import {
   ListOrdered,
   CreditCard,
   DollarSign,
+  BarChart3,
   LogOut,
 } from 'lucide-react'
 import { useAuthActions } from '../hooks/use-auth'
@@ -16,6 +17,7 @@ const sidebarItems = [
   { to: '/admin/antrian', label: 'Antrian', icon: ListOrdered },
   { to: '/admin/pembayaran', label: 'Verifikasi QRIS', icon: CreditCard },
   { to: '/admin/harga', label: 'Kelola Harga', icon: DollarSign },
+  { to: '/admin/laporan', label: 'Laporan', icon: BarChart3 },
 ]
 
 export default function AdminLayout() {

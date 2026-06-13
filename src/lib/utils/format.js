@@ -33,3 +33,33 @@ export function formatFileSize(bytes) {
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`
 }
+
+export function exportToCsv(orders, filename) {
+  const headers = [
+    'Order ID,Tanggal,No. Antrian,Pelanggan,Jenis Cetak,Ukuran Kertas,Halaman,Copy,Total,Metode Bayar',
+  ]
+  const rows = orders.map((o) =>
+    [
+      o.id,
+      o.created_at,
+      o.queue_number,
+      o.users?.name || '',
+      o.print_type,
+      o.paper_size,
+      o.pages,
+      o.copies,
+      o.total_price,
+      o.payment_method,
+    ].join(',')
+  )
+  const csvContent = [...headers, ...rows].join('\n')
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}

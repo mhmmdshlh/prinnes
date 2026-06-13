@@ -25,6 +25,7 @@ import AdminOrderDetail from '../pages/admin/order-detail'
 import AdminQueue from '../pages/admin/queue'
 import AdminPayments from '../pages/admin/payments'
 import AdminPrices from '../pages/admin/prices'
+import AdminReport from '../pages/admin/AdminReport'
 
 const router = createBrowserRouter([
   {
@@ -65,6 +66,7 @@ const router = createBrowserRouter([
       { path: '/admin/antrian', element: <AdminQueue /> },
       { path: '/admin/pembayaran', element: <AdminPayments /> },
       { path: '/admin/harga', element: <AdminPrices /> },
+      { path: '/admin/laporan', element: <AdminReport /> },
     ],
   },
 ])

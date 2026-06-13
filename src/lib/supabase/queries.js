@@ -384,3 +384,20 @@ export async function getTodayHourlyOrders() {
 
   return hourly.filter((h) => h.count > 0)
 }
+
+/* ───────── REPORTS ───────── */
+
+export async function getReportOrders({ startDate, endDate }) {
+  let query = supabase
+    .from('orders')
+    .select('*, users!inner(name, phone)')
+    .eq('status', 'selesai')
+    .order('created_at', { ascending: true })
+
+  if (startDate) query = query.gte('created_at', startDate)
+  if (endDate) query = query.lt('created_at', endDate)
+
+  const { data, error } = await query
+  if (error) throw error
+  return data
+}
