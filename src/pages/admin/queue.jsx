@@ -1,8 +1,46 @@
 import { useNavigate } from 'react-router-dom'
 import { useActiveQueue } from '../../hooks/use-queue'
+import { formatDateShort } from '../../lib/utils/format'
 import * as queries from '../../lib/supabase/queries'
 import QueueItem from '../../components/features/QueueItem'
 import EmptyState from '../../components/ui/EmptyState'
+
+function groupByDate(items) {
+  const groups = {}
+  for (const item of items) {
+    const date = new Date(item.created_at).toISOString().split('T')[0]
+    if (!groups[date]) groups[date] = []
+    groups[date].push(item)
+  }
+  return Object.entries(groups).sort((a, b) => b[0].localeCompare(a[0]))
+}
+
+function DateGroup({ items, renderItem }) {
+  const grouped = groupByDate(items)
+  const showSeparator = grouped.length > 1
+
+  return (
+    <div className="space-y-2">
+      {grouped.map(([date, dateItems], idx) => (
+        <div key={date}>
+          {showSeparator && idx > 0 && (
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-surface px-3 text-xs text-muted">
+                  {formatDateShort(date)}
+                </span>
+              </div>
+            </div>
+          )}
+          {dateItems.map(renderItem)}
+        </div>
+      ))}
+    </div>
+  )
+}
 
 export default function AdminQueue() {
   const navigate = useNavigate()
@@ -18,6 +56,9 @@ export default function AdminQueue() {
     refetch()
   }
 
+  const waiting = queue.filter((o) => o.status === 'menunggu')
+  const processing = queue.filter((o) => o.status === 'diproses')
+
   if (loading) {
     return (
       <div className="flex justify-center py-16">
@@ -25,9 +66,6 @@ export default function AdminQueue() {
       </div>
     )
   }
-
-  const waiting = queue.filter((o) => o.status === 'menunggu')
-  const processing = queue.filter((o) => o.status === 'diproses')
 
   return (
     <div className="space-y-6">
@@ -53,16 +91,17 @@ export default function AdminQueue() {
           <h2 className="font-heading mb-4 text-lg font-semibold">
             Sedang Diproses
           </h2>
-          <div className="space-y-2">
-            {processing.map((item) => (
+          <DateGroup
+            items={processing}
+            renderItem={(item) => (
               <QueueItem
                 key={item.id}
                 item={item}
                 onComplete={handleComplete}
                 onDetail={() => navigate(`/admin/pesanan/${item.id}`)}
               />
-            ))}
-          </div>
+            )}
+          />
         </section>
       )}
 
@@ -73,11 +112,12 @@ export default function AdminQueue() {
         {waiting.length === 0 ? (
           <EmptyState title="Tidak ada antrian yang menunggu" />
         ) : (
-          <div className="space-y-2">
-            {waiting.map((item) => (
-              <QueueItem key={item.id} item={item} onProcess={handleProcess} onDetail={() => navigate(`/admin/pesanan/${item.id}`)} />
-            ))}
-          </div>
+            <DateGroup
+              items={waiting}
+              renderItem={(item) => (
+                <QueueItem key={item.id} item={item} onProcess={handleProcess} onDetail={() => navigate(`/admin/pesanan/${item.id}`)} />
+              )}
+            />
         )}
       </section>
     </div>

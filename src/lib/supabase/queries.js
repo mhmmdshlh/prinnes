@@ -248,7 +248,7 @@ export async function updateServicePrice(id, pricePerPage) {
 export async function getActiveQueue() {
   const { data, error } = await supabase
     .from('orders')
-    .select('id, queue_number, status, user_id, users(name), print_type, paper_size, copies, order_files(file_name)')
+    .select('id, queue_number, status, user_id, users(name), print_type, paper_size, copies, order_files(file_name), created_at')
     .in('status', ['menunggu', 'diproses'])
     .order('created_at', { ascending: true })
   if (error) throw error
