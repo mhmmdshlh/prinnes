@@ -36,7 +36,7 @@ export async function getActiveOrdersByUser(userId) {
 export async function getOrderById(orderId) {
   const { data, error } = await supabase
     .from('orders')
-    .select('*, order_files(*), payments(*)')
+    .select('*, order_files(*), payments(*), users(name, phone, email)')
     .eq('id', orderId)
     .single()
   if (error) throw error
@@ -53,6 +53,8 @@ export async function getAllOrders(filters = {}) {
   if (filters.payment_method)
     query = query.eq('payment_method', filters.payment_method)
   if (filters.date) query = query.gte('created_at', filters.date)
+
+  query = query.limit(100)
 
   const { data, error } = await query
   if (error) throw error

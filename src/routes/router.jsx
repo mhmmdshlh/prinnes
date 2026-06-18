@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { ProtectedRoute } from './protected-route'
 import { AdminRoute } from './admin-route'
@@ -19,13 +20,14 @@ import HistoryDetail from '../pages/customer/history-detail'
 import Profile from '../pages/customer/profile'
 
 import AdminLogin from '../pages/admin/login'
-import AdminDashboard from '../pages/admin/dashboard'
-import AdminOrders from '../pages/admin/orders'
-import AdminOrderDetail from '../pages/admin/order-detail'
-import AdminQueue from '../pages/admin/queue'
-import AdminPayments from '../pages/admin/payments'
-import AdminPrices from '../pages/admin/prices'
-import AdminReport from '../pages/admin/AdminReport'
+
+const AdminDashboard = lazy(() => import('../pages/admin/dashboard'))
+const AdminOrders = lazy(() => import('../pages/admin/orders'))
+const AdminOrderDetail = lazy(() => import('../pages/admin/order-detail'))
+const AdminQueue = lazy(() => import('../pages/admin/queue'))
+const AdminPayments = lazy(() => import('../pages/admin/payments'))
+const AdminPrices = lazy(() => import('../pages/admin/prices'))
+const AdminReport = lazy(() => import('../pages/admin/AdminReport'))
 
 const router = createBrowserRouter([
   {

@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useActiveQueue } from '../../hooks/use-queue'
+import { useUpdateOrderStatus } from '../../hooks/use-mutations'
 import { formatDateShort } from '../../lib/utils/format'
-import * as queries from '../../lib/supabase/queries'
 import QueueItem from '../../components/features/QueueItem'
 import EmptyState from '../../components/ui/EmptyState'
 
@@ -45,15 +45,24 @@ function DateGroup({ items, renderItem }) {
 export default function AdminQueue() {
   const navigate = useNavigate()
   const { queue, loading, refetch } = useActiveQueue()
+  const updateStatusMutation = useUpdateOrderStatus()
 
   async function handleProcess(orderId) {
-    await queries.markAsProcessing(orderId)
-    refetch()
+    try {
+      await updateStatusMutation.mutateAsync({ orderId, status: 'diproses' })
+      refetch()
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   async function handleComplete(orderId) {
-    await queries.markAsCompleted(orderId)
-    refetch()
+    try {
+      await updateStatusMutation.mutateAsync({ orderId, status: 'selesai' })
+      refetch()
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   const waiting = queue.filter((o) => o.status === 'menunggu')

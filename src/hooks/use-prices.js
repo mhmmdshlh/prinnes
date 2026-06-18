@@ -1,27 +1,16 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import * as queries from '../lib/supabase/queries'
+import { queryKeys } from '../lib/query/keys'
 
 export function useServicePrices() {
-  const [prices, setPrices] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { data: prices = [], isLoading, refetch } = useQuery({
+    queryKey: queryKeys.prices,
+    queryFn: queries.getServicePrices,
+    staleTime: 5 * 60 * 1000,
+  })
 
-  const fetchPrices = useCallback(async () => {
-    setLoading(true)
-    try {
-      const data = await queries.getServicePrices()
-      setPrices(data)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchPrices()
-  }, [fetchPrices])
-
-  return { prices, loading, refetch: fetchPrices }
+  return { prices, loading: isLoading, refetch }
 }
 
 export function useCalculatePrice() {

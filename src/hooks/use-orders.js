@@ -1,45 +1,31 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from './use-auth-context'
 import * as queries from '../lib/supabase/queries'
 import { supabase } from '../lib/supabase/client'
+import { queryKeys } from '../lib/query/keys'
 
 export function useOrders() {
   const { user } = useAuth()
-  const [orders, setOrders] = useState([])
-  const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    if (!user) return
-    queries
-      .getOrdersByUser(user.id)
-      .then(setOrders)
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [user])
+  const { data: orders = [], isLoading } = useQuery({
+    queryKey: queryKeys.orders.byUser(user?.id),
+    queryFn: () => queries.getOrdersByUser(user.id),
+    enabled: !!user,
+  })
 
-  return { orders, loading }
+  return { orders, loading: isLoading }
 }
 
 export function useActiveOrders() {
   const { user } = useAuth()
-  const [orders, setOrders] = useState([])
-  const [loading, setLoading] = useState(true)
+  const queryClient = useQueryClient()
 
-  const fetchOrders = useCallback(async () => {
-    if (!user) return
-    try {
-      const data = await queries.getActiveOrdersByUser(user.id)
-      setOrders(data)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }, [user])
-
-  useEffect(() => {
-    fetchOrders()
-  }, [fetchOrders])
+  const { data: orders = [], isLoading } = useQuery({
+    queryKey: queryKeys.orders.active(user?.id),
+    queryFn: () => queries.getActiveOrdersByUser(user.id),
+    enabled: !!user,
+  })
 
   useEffect(() => {
     if (!user) return
@@ -54,53 +40,37 @@ export function useActiveOrders() {
           table: 'orders',
           filter: `user_id=eq.${user.id}`,
         },
-        () => fetchOrders()
+        () => {
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.orders.active(user.id),
+          })
+        }
       )
       .subscribe()
 
     return () => {
       subscription.unsubscribe()
     }
-  }, [user, fetchOrders])
+  }, [user, queryClient])
 
-  return { orders, loading }
+  return { orders, loading: isLoading }
 }
 
 export function useOrderDetail(orderId) {
-  const [order, setOrder] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const { data: order = null, isLoading } = useQuery({
+    queryKey: queryKeys.orders.detail(orderId),
+    queryFn: () => queries.getOrderById(orderId),
+    enabled: !!orderId,
+  })
 
-  useEffect(() => {
-    if (!orderId) return
-    queries
-      .getOrderById(orderId)
-      .then(setOrder)
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [orderId])
-
-  return { order, loading }
+  return { order, loading: isLoading }
 }
 
 export function useAllOrders(filters) {
-  const [orders, setOrders] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { data: orders = [], isLoading } = useQuery({
+    queryKey: queryKeys.orders.all(filters),
+    queryFn: () => queries.getAllOrders(filters),
+  })
 
-  const fetchOrders = useCallback(async () => {
-    setLoading(true)
-    try {
-      const data = await queries.getAllOrders(filters)
-      setOrders(data)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }, [JSON.stringify(filters)])
-
-  useEffect(() => {
-    fetchOrders()
-  }, [fetchOrders])
-
-  return { orders, loading, refetch: fetchOrders }
+  return { orders, loading: isLoading }
 }

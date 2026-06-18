@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Upload } from 'lucide-react'
+import { useUploadPaymentProof } from '../../hooks/use-mutations'
 import { QRCodeSVG } from 'qrcode.react'
-import * as queries from '../../lib/supabase/queries'
 import OrderSuccess from './OrderSuccess'
 
 const qrisPayload = import.meta.env.VITE_QRIS_MERCHANT_PAYLOAD || 'QRIS-PRINNES-DEFAULT'
@@ -10,6 +10,7 @@ export default function QrPaymentStep({ order }) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const [uploaded, setUploaded] = useState(false)
+  const uploadMutation = useUploadPaymentProof()
 
   async function handleProofUpload(e) {
     const file = e.target.files?.[0]
@@ -23,7 +24,7 @@ export default function QrPaymentStep({ order }) {
     setUploading(true)
     setError('')
     try {
-      await queries.uploadPaymentProof(order.id, file)
+      await uploadMutation.mutateAsync({ orderId: order.id, file })
       setUploaded(true)
     } catch (err) {
       setError(err.message || 'Gagal upload bukti')

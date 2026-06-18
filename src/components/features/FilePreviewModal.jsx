@@ -42,6 +42,7 @@ export default function FilePreviewModal({ file, publicUrl, onClose }) {
             <img
               src={publicUrl}
               alt={file.file_name}
+              loading="lazy"
               className="max-h-[70vh] rounded-lg object-contain"
             />
           ) : isPdf ? (

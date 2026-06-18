@@ -1,7 +1,7 @@
-import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { useOrderDetail } from '../../hooks/use-orders'
+import { useUpdateOrderStatus } from '../../hooks/use-mutations'
 import { formatCurrency, formatDate } from '../../lib/utils/format'
 import {
   ORDER_STATUS_LABEL,
@@ -10,7 +10,6 @@ import {
   PRINT_TYPE_LABEL,
   PAPER_SIZE_LABEL,
 } from '../../lib/constants'
-import * as queries from '../../lib/supabase/queries'
 import Badge from '../../components/ui/Badge'
 import FileList from '../../components/features/FileList'
 
@@ -31,18 +30,17 @@ export default function AdminOrderDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { order, loading } = useOrderDetail(id)
-  const [updating, setUpdating] = useState(false)
+  const updateStatusMutation = useUpdateOrderStatus()
 
   async function handleStatusUpdate() {
     if (!order || !statusTransitions[order.status]) return
-    setUpdating(true)
     try {
-      await queries.updateOrderStatus(id, statusTransitions[order.status])
-      window.location.reload()
+      await updateStatusMutation.mutateAsync({
+        orderId: id,
+        status: statusTransitions[order.status],
+      })
     } catch (e) {
       console.error(e)
-    } finally {
-      setUpdating(false)
     }
   }
 
@@ -80,9 +78,10 @@ export default function AdminOrderDetail() {
           <p className="font-heading text-primary text-3xl font-bold">
             {order.queue_number}
           </p>
-          <p className="text-muted mt-1 text-sm">
-            {order.users?.name} &middot; {order.users?.phone}
-          </p>
+          <div className="text-muted mt-1 text-sm">
+            <p>{order.users?.name} &middot; {order.users?.phone}</p>
+            <p className="text-xs">{order.users?.email}</p>
+          </div>
         </div>
         <div className="text-right">
           <Badge variant={statusBadgeVariant(order.status)}>
@@ -92,10 +91,10 @@ export default function AdminOrderDetail() {
           {nextStatus && (
             <button
               onClick={handleStatusUpdate}
-              disabled={updating}
+              disabled={updateStatusMutation.isPending}
               className="bg-primary hover:bg-primary-dark disabled:bg-muted mt-3 block w-full rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors disabled:cursor-not-allowed"
             >
-              {updating
+              {updateStatusMutation.isPending
                 ? 'Memproses...'
                 : `Tandai ${ORDER_STATUS_LABEL[nextStatus]}`}
             </button>

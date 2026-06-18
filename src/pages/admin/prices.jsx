@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { Save } from 'lucide-react'
 import { useServicePrices } from '../../hooks/use-prices'
+import { useUpdateServicePrice } from '../../hooks/use-mutations'
 import { formatCurrency } from '../../lib/utils/format'
 import { PRINT_TYPE_LABEL, PAPER_SIZE_LABEL } from '../../lib/constants'
-import * as queries from '../../lib/supabase/queries'
 
 export default function AdminPrices() {
   const { prices, loading, refetch } = useServicePrices()
+  const updatePriceMutation = useUpdateServicePrice()
   const [editValues, setEditValues] = useState({})
-  const [saving, setSaving] = useState(false)
 
   function handleEdit(id, value) {
     setEditValues((prev) => ({ ...prev, [id]: value }))
@@ -18,9 +18,8 @@ export default function AdminPrices() {
     const newPrice = editValues[id]
     if (!newPrice || isNaN(newPrice)) return
 
-    setSaving(true)
     try {
-      await queries.updateServicePrice(id, newPrice)
+      await updatePriceMutation.mutateAsync({ id, pricePerPage: newPrice })
       setEditValues((prev) => {
         const copy = { ...prev }
         delete copy[id]
@@ -29,8 +28,6 @@ export default function AdminPrices() {
       refetch()
     } catch (e) {
       console.error(e)
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -87,11 +84,11 @@ export default function AdminPrices() {
                   {editValues[price.id] !== undefined ? (
                     <button
                       onClick={() => handleSave(price.id)}
-                      disabled={saving}
+                      disabled={updatePriceMutation.isPending}
                       className="bg-primary hover:bg-primary-dark disabled:bg-muted flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-medium text-white transition-colors disabled:cursor-not-allowed"
                     >
                       <Save className="h-3.5 w-3.5" />
-                      {saving ? 'Menyimpan...' : 'Simpan'}
+                      {updatePriceMutation.isPending ? 'Menyimpan...' : 'Simpan'}
                     </button>
                   ) : (
                     <button

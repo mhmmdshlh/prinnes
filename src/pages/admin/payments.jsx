@@ -1,18 +1,23 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ExternalLink } from 'lucide-react'
 import { useAuth } from '../../hooks/use-auth-context'
+import { useVerifyPayment } from '../../hooks/use-mutations'
 import * as queries from '../../lib/supabase/queries'
 import { supabase } from '../../lib/supabase/client'
 import { formatCurrency, formatDate } from '../../lib/utils/format'
 import EmptyState from '../../components/ui/EmptyState'
 import VerificationModal from '../../components/features/VerificationModal'
+import { queryKeys } from '../../lib/query/keys'
+import { useQueryClient } from '@tanstack/react-query'
 
 export default function AdminPayments() {
   const { user } = useAuth()
+  const queryClient = useQueryClient()
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedPayment, setSelectedPayment] = useState(null)
   const [proofUrl, setProofUrl] = useState('')
+  const verifyMutation = useVerifyPayment()
 
   const fetchPayments = useCallback(async () => {
     setLoading(true)
@@ -41,13 +46,14 @@ export default function AdminPayments() {
   async function handleVerify(action, rejectionNote) {
     if (!selectedPayment || !user) return
     try {
-      await queries.verifyPayment(
-        selectedPayment.id,
-        user.id,
+      await verifyMutation.mutateAsync({
+        paymentId: selectedPayment.id,
+        adminId: user.id,
         action,
-        rejectionNote
-      )
+        rejectionNote,
+      })
       setSelectedPayment(null)
+      queryClient.invalidateQueries({ queryKey: queryKeys.payments })
       fetchPayments()
     } catch (e) {
       console.error(e)

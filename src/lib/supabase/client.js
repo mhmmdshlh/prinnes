@@ -9,7 +9,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
-const TIMEOUT_MS = 30000
+const TIMEOUT_MS = 15000
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {

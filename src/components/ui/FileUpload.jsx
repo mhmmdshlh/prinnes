@@ -44,6 +44,7 @@ function FilePreviewModal({ file, url, onClose }) {
             <img
               src={url}
               alt={file.name}
+              loading="lazy"
               className="max-h-[70vh] rounded-lg object-contain"
             />
           ) : isPdf ? (

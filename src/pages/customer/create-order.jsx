@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, ArrowRight, Check, Store } from 'lucide-react'
 import { orderConfigSchema, paymentMethodSchema, allowedFileTypes, MAX_FILE_SIZE } from '../../lib/utils/validation'
 import { useAuth } from '../../hooks/use-auth-context'
@@ -9,6 +10,7 @@ import { useCalculatePrice } from '../../hooks/use-prices'
 import { useStoreStatus } from '../../hooks/use-store-status'
 import { extractTotalPages } from '../../lib/utils/pageCount'
 import * as queries from '../../lib/supabase/queries'
+import { queryKeys } from '../../lib/query/keys'
 import FileUpload from '../../components/ui/FileUpload'
 import OrderConfigForm from '../../components/features/OrderConfigForm'
 import OrderSummary from '../../components/features/OrderSummary'
@@ -20,6 +22,7 @@ export default function CreateOrder() {
   const step = parseInt(searchParams.get('step') || '1', 10)
   const navigate = useNavigate()
   const { user } = useAuth()
+  const queryClient = useQueryClient()
   const { calculate, loading } = useCalculatePrice()
   const { isOpen, loading: storeLoading } = useStoreStatus()
 
@@ -111,6 +114,12 @@ export default function CreateOrder() {
       for (const file of files) {
         await queries.uploadOrderFile(order.id, file)
       }
+
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.orders.byUser(user.id),
+      })
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.queue })
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.stats })
 
       if (data.payment_method === 'qris') {
         setQrOrder(order)

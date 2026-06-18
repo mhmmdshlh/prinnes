@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Upload } from 'lucide-react'
+import { useUploadPaymentProof } from '../../hooks/use-mutations'
 import { formatCurrency } from '../../lib/utils/format'
-import * as queries from '../../lib/supabase/queries'
 import { supabase } from '../../lib/supabase/client'
 import Badge from '../ui/Badge'
 
@@ -14,6 +14,7 @@ export default function PaymentSection({ order }) {
       ? supabase.storage.from('payment-proofs').getPublicUrl(order.payments[0].proof_image).data.publicUrl
       : null
   )
+  const uploadMutation = useUploadPaymentProof()
 
   const canEdit = paymentStatus !== 'lunas'
 
@@ -29,7 +30,7 @@ export default function PaymentSection({ order }) {
     setUploading(true)
     setUploadError('')
     try {
-      const result = await queries.uploadPaymentProof(order.id, file)
+      const result = await uploadMutation.mutateAsync({ orderId: order.id, file })
       setProofUrl(result.public_url)
       setPaymentStatus('menunggu_verifikasi')
     } catch (err) {
@@ -101,6 +102,7 @@ export default function PaymentSection({ order }) {
                 <img
                   src={proofUrl}
                   alt="Bukti Pembayaran"
+                  loading="lazy"
                   className="max-h-48 w-full rounded object-contain"
                 />
               </div>

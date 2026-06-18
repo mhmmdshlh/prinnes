@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import * as queries from '../lib/supabase/queries'
+import { queryKeys } from '../lib/query/keys'
 
 const presets = {
   today: () => {
@@ -29,26 +31,13 @@ const presets = {
 
 export function useReportData() {
   const [preset, setPreset] = useState('today')
-  const [orders, setOrders] = useState([])
-  const [loading, setLoading] = useState(true)
 
   const { startDate, endDate } = presets[preset]()
 
-  const fetchData = useCallback(async () => {
-    setLoading(true)
-    try {
-      const result = await queries.getReportOrders({ startDate, endDate })
-      setOrders(result)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }, [startDate, endDate])
-
-  useEffect(() => {
-    fetchData()
-  }, [fetchData])
+  const { data: orders = [], isLoading } = useQuery({
+    queryKey: queryKeys.reports(preset),
+    queryFn: () => queries.getReportOrders({ startDate, endDate }),
+  })
 
   const summary = useMemo(() => {
     const revenue = orders.reduce((sum, o) => sum + Number(o.total_price), 0)
@@ -86,13 +75,12 @@ export function useReportData() {
 
   return {
     orders,
-    loading,
+    loading: isLoading,
     preset,
     setPreset,
     presetLabel,
     summary,
     printBreakdown,
     revenueTrend,
-    refetch: fetchData,
   }
 }

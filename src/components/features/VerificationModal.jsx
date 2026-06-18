@@ -21,6 +21,7 @@ export default function VerificationModal({ proofUrl, onVerify, onClose }) {
             <img
               src={proofUrl}
               alt="Bukti Pembayaran"
+              loading="lazy"
               className="max-h-80 rounded-lg object-contain"
             />
           ) : (
