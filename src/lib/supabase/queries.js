@@ -52,7 +52,8 @@ export async function getAllOrders(filters = {}) {
   if (filters.status) query = query.eq('status', filters.status)
   if (filters.payment_method)
     query = query.eq('payment_method', filters.payment_method)
-  if (filters.date) query = query.gte('created_at', filters.date)
+  if (filters.startDate) query = query.gte('created_at', filters.startDate)
+  if (filters.endDate) query = query.lte('created_at', filters.endDate)
 
   query = query.limit(100)
 
@@ -163,15 +164,13 @@ export async function uploadPaymentProof(orderId, file) {
     .from('payment-proofs')
     .getPublicUrl(filePath)
 
+  await supabase.from('payments').delete().eq('order_id', orderId)
+
   const { data, error } = await supabase
     .from('payments')
-    .upsert({
-      order_id: orderId,
-      proof_image: filePath,
-    })
+    .insert({ order_id: orderId, proof_image: filePath })
     .select()
     .single()
-
   if (error) throw error
 
   await supabase
