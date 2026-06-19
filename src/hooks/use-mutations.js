@@ -23,6 +23,7 @@ export function useVerifyPayment() {
       queries.verifyPayment(paymentId, adminId, action, rejectionNote),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.payments })
+      queryClient.invalidateQueries({ queryKey: queryKeys.rejectedPayments })
     },
   })
 }

@@ -164,8 +164,6 @@ export async function uploadPaymentProof(orderId, file) {
     .from('payment-proofs')
     .getPublicUrl(filePath)
 
-  await supabase.from('payments').delete().eq('order_id', orderId)
-
   const { data, error } = await supabase
     .from('payments')
     .insert({ order_id: orderId, proof_image: filePath })
@@ -186,6 +184,17 @@ export async function getPendingPayments() {
     .from('payments')
     .select('*, orders!inner(id, queue_number, users!inner(name, phone))')
     .is('verified_by', null)
+
+  if (error) throw error
+  return data
+}
+
+export async function getRejectedPayments() {
+  const { data, error } = await supabase
+    .from('payments')
+    .select('*, orders!inner(id, queue_number, payment_status, total_price, users!inner(name, phone))')
+    .not('verified_by', 'is', null)
+    .order('verified_at', { ascending: false })
 
   if (error) throw error
   return data

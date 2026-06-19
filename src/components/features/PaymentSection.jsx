@@ -28,9 +28,13 @@ export default function PaymentSection({ order }) {
       return
     }
     setPaymentStatus(order.payment_status)
+    const sorted = [...(order.payments || [])].sort(
+      (a, b) => new Date(b.created_at) - new Date(a.created_at)
+    )
+    const latest = sorted[0]
     setProofUrl(
-      order.payments?.[0]?.proof_image
-        ? supabase.storage.from('payment-proofs').getPublicUrl(order.payments[0].proof_image).data.publicUrl
+      latest?.proof_image
+        ? supabase.storage.from('payment-proofs').getPublicUrl(latest.proof_image).data.publicUrl
         : null
     )
   }, [order.payment_status, order.payments])

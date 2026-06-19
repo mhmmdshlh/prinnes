@@ -14,4 +14,5 @@ export const queryKeys = {
   reports: (preset) => ['reports', preset],
   store: ['store', 'status'],
   payments: ['payments', 'pending'],
+  rejectedPayments: ['payments', 'rejected'],
 }
