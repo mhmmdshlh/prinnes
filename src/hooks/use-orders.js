@@ -57,11 +57,39 @@ export function useActiveOrders() {
 }
 
 export function useOrderDetail(orderId) {
+  const queryClient = useQueryClient()
+
   const { data: order = null, isLoading } = useQuery({
     queryKey: queryKeys.orders.detail(orderId),
     queryFn: () => queries.getOrderById(orderId),
     enabled: !!orderId,
   })
+
+  useEffect(() => {
+    if (!orderId) return
+
+    const subscription = supabase
+      .channel(`order-${orderId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+          filter: `id=eq.${orderId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.orders.detail(orderId),
+          })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      subscription.unsubscribe()
+    }
+  }, [orderId, queryClient])
 
   return { order, loading: isLoading }
 }

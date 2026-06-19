@@ -1,8 +1,20 @@
 import { Link } from 'react-router-dom'
-import { Clock } from 'lucide-react'
-import { ORDER_STATUS_LABEL, PRINT_TYPE_LABEL, PAPER_SIZE_LABEL } from '../../lib/constants'
+import { Clock, AlertTriangle } from 'lucide-react'
+import { ORDER_STATUS_LABEL, PRINT_TYPE_LABEL, PAPER_SIZE_LABEL, PAYMENT_STATUS_LABEL } from '../../lib/constants'
+import Badge from '../ui/Badge'
+
+const paymentBadgeVariant = {
+  menunggu_verifikasi: 'warning',
+  ditolak: 'error',
+  lunas: 'success',
+}
 
 export default function OrderItem({ order, showUser = false }) {
+  const showPayment =
+    order.payment_method === 'qris' &&
+    order.payment_status &&
+    order.payment_status !== 'belum_dibayar'
+
   return (
     <Link
       to={`/pesanan/${order.id}`}
@@ -30,8 +42,21 @@ export default function OrderItem({ order, showUser = false }) {
               {new Date(order.created_at).toLocaleDateString('id-ID')}
             </p>
           )}
+          {showPayment && (
+            <div className="mt-1.5">
+              <Badge variant={paymentBadgeVariant[order.payment_status] || 'default'}>
+                {PAYMENT_STATUS_LABEL[order.payment_status]}
+              </Badge>
+              {order.payment_status === 'ditolak' && (
+                <p className="mt-1 flex items-center gap-1 text-xs text-red-600">
+                  <AlertTriangle className="h-3 w-3 shrink-0" />
+                  Pembayaran bermasalah
+                </p>
+              )}
+            </div>
+          )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <Clock className="text-muted h-4 w-4" />
           <span className="text-sm font-medium capitalize">
             {ORDER_STATUS_LABEL[order.status] || order.status}
